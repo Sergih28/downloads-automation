@@ -8,7 +8,7 @@
 
 ## What I learned
 
-- Basic stuff with Python (_function, class, tupple, loop_)
+- Basic stuff with Python (_function, class, tuple, loop_)
 - File management with Python (writing a log)
 - Refreshed my knowledge of _Cron_
 
