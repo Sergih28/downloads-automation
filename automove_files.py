@@ -1,8 +1,8 @@
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
+from datetime import datetime
 
 import os
-import json
 import time
 
 image_extensions = ('.png', '.jpg', '.jpeg', '.svg', '.tiff')
@@ -20,6 +20,18 @@ videos_folder_destination = '/Users/sergi/Movies'
 audios_folder_destination = '/Users/sergi/Music'
 installers_folder_destination = '/Users/sergi/Documents/installers'
 pdfs_folder_destination = '/Users/sergi/Documents/pdfs'
+log_file = '/Users/sergi/Documents/startup/downloads_automation_log.txt'
+
+
+def date_time():
+    now = datetime.now()
+    return now.strftime('%d/%m/%Y %H:%M:%S')
+
+
+def print_to_log(message):
+    f = open(log_file, 'a+')
+    f.write(message + '\n')
+    f.close()
 
 
 def destination(filename):
@@ -38,6 +50,7 @@ def move_files():
     for filename in os.listdir(folder_to_track):
         src = folder_to_track + '/' + filename
         new_destination = destination(filename)
+        print_to_log(date_time() + ' Moving ' + src + ' to ' + new_destination)
         os.rename(src, new_destination)
 
 
@@ -54,7 +67,7 @@ move_files()
 
 try:
     while True:
-        time.sleep(10)
+        time.sleep(3)
 except KeyboardInterrupt:
     observer.stop()
 observer.join()
