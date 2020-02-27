@@ -36,6 +36,9 @@ def print_to_log(message):
 
 def destination(filename):
     extension = os.path.splitext(filename)[1]
+    if extension == '.download':
+        return ''
+
     destination_folder = generic_folder_destination
 
     if extension in image_extensions:
@@ -56,8 +59,10 @@ def move_files():
     for filename in os.listdir(folder_to_track):
         src = folder_to_track + '/' + filename
         new_destination = destination(filename)
-        print_to_log(date_time() + ' Moving ' + src + ' to ' + new_destination)
-        os.rename(src, new_destination)
+        if new_destination != '':
+            print_to_log(date_time() + ' Moving ' +
+                         src + ' to ' + new_destination)
+            os.rename(src, new_destination)
 
 
 class MyHandler(FileSystemEventHandler):
