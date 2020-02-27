@@ -36,18 +36,20 @@ def print_to_log(message):
 
 def destination(filename):
     extension = os.path.splitext(filename)[1]
+    destination_folder = generic_folder_destination
 
     if extension in image_extensions:
-        return images_folder_destination + '/' + filename
-    if extension in video_extensions:
-        return videos_folder_destination + '/' + filename
-    if extension in audio_extensions:
-        return audios_folder_destination + '/' + filename
-    if extension in installer_extensions:
-        return installers_folder_destination + '/' + filename
-    if extension in pdfs_extensions:
-        return pdfs_folder_destination + '/' + filename
-    return generic_folder_destination + '/' + filename
+        destination_folder = images_folder_destination
+    elif extension in video_extensions:
+        destination_folder = videos_folder_destination
+    elif extension in audio_extensions:
+        destination_folder = audios_folder_destination
+    elif extension in installer_extensions:
+        destination_folder = installers_folder_destination
+    elif extension in pdfs_extensions:
+        destination_folder = pdfs_folder_destination
+
+    return destination_folder + '/' + filename
 
 
 def move_files():
