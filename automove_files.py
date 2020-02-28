@@ -46,22 +46,54 @@ def check_file_exists(path):
     return os.path.exists(path)
 
 
-def check_file_completed(filename):
+def check_file_completed(path):
     historical_size = -1
-    while (check_file_exists(filename) and historical_size != os.path.getsize(filename)):
-        # print(str(historical_size) + ' - ' + str(os.path.getsize(filename)))
-        historical_size = os.path.getsize(filename)
-        time.sleep(1)
-    # if check_file_exists(filename):
-        # print(str(historical_size) + ' - ' + str(os.path.getsize(filename)))
+    extension = get_file_extension(path)
+    downloading_extensions = ('.crdownload', '.download', '.part', '.partial')
+
+    if extension in downloading_extensions:
+        print('Download extension detected:' + extension)
+        time.sleep(2)
+        print('Checking again if the extension has changed')
+        return False
+
+    while (historical_size != os.path.getsize(path)):
+        if historical_size != -1:
+            print(path + ' -- Waiting for the file to be complete')
+        historical_size = os.path.getsize(path)
+        time.sleep(2)
+
+    print(path + ' -- File ready to be moved')
+    return True
+
+
+def get_new_destination(path, filename, destination):
+    # check if the file already exists on the destination folder
+    # If so, keep adding a number until it doesn't exist
+    if not check_file_exists(destination):
+        print('Destination: ' + destination)
+        return destination
+
+    counter = 1
+    print('File exists on the destination folder, giving it a new name')
+    while True:
+        counter = counter + 1
+        new_destination = get_file_name(
+            destination) + ' (' + str(counter) + ')' + get_file_extension(destination)
+
+        if not check_file_exists(new_destination):
+            destination = new_destination
+            print('New name: ' + destination)
+            break
+    return destination
 
 
 def destination(path, filename):
     destination_folder = generic_folder_destination
-    # print('isfile: ' + str(os.path.isfile(path)) + '  -- ' + filename)
+
     if os.path.isfile(path):
         extension = get_file_extension(filename)
-        # print('extensione: ' + extension)
+
         if extension == '.download':
             check_file_completed(filename)
             return ''
@@ -80,52 +112,42 @@ def destination(path, filename):
     return destination_folder + '/' + filename
 
 
-def move_files(n, file_completed=False):
-    for filename in os.listdir(folder_to_track):
-        if get_file_name(filename).startswith('.'):  # omit hidden files
-            continue
+def move_files():
+    files = os.listdir(folder_to_track)
+    # omit hidden files
+    filtered_files = [x for x in files if not x.startswith('.')]
 
+    for filename in filtered_files:
         src = folder_to_track + '/' + filename
-        # check if it has finished copying / downloading it
-        if not file_completed:
-            check_file_completed(src)
-        # print('file should be completed')
-        # if file doens't exist anymore, start again
-        if not check_file_exists(src):
-            move_files(n, True)
-            return
 
-        if n > 1:
-            filename = get_file_name(
-                filename) + ' (' + str(n) + ')' + get_file_extension(filename)
+        if not check_file_completed(src):
+            move_files()
+            break
+
         new_destination = destination(src, filename)
-        # print('filename: ' + filename)
+        new_destination = get_new_destination(src, filename, new_destination)
 
-        if new_destination != '':
-            if not check_file_exists(new_destination):
-                print_to_log(date_time() + ' Moving ' +
-                             src + ' to ' + new_destination)
-                os.rename(src, new_destination)
-            else:  # if file exists, retry with a new name
-                move_files(n+1, True)
-        else:
-            move_files(n, False)
+        print(date_time() + ' Moving ' +
+              src + ' to ' + new_destination)
+        print_to_log(date_time() + ' Moving ' +
+                     src + ' to ' + new_destination)
+        os.rename(src, new_destination)
 
 
 class MyHandler(FileSystemEventHandler):
     def on_modified(self, event):
-        move_files(1)
+        move_files()
 
 
 event_handler = MyHandler()
 observer = Observer()
 observer.schedule(event_handler, folder_to_track, recursive=True)
 observer.start()
-move_files(1)
+move_files()
 
 try:
     while True:
-        time.sleep(3)
+        time.sleep(1)
 except KeyboardInterrupt:
     observer.stop()
 observer.join()
