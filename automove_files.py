@@ -68,8 +68,6 @@ def check_file_completed(path):
 
 
 def get_new_destination(path, filename, destination):
-    # check if the file already exists on the destination folder
-    # If so, keep adding a number until it doesn't exist
     if not check_file_exists(destination):
         print('Destination: ' + destination)
         return destination
