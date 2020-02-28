@@ -82,8 +82,7 @@ def destination(path, filename):
 
 def move_files(n, file_completed=False):
     for filename in os.listdir(folder_to_track):
-        # omit .DS_Store files
-        if get_file_name(filename) == '.DS_Store':
+        if get_file_name(filename).startswith('.'):  # omit hidden files
             continue
 
         src = folder_to_track + '/' + filename
